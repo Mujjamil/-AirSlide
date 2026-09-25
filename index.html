@@ -1,134 +1,38 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>GestureSlides — Hand-Controlled Presentations</title>
-  <meta name="description" content="Upload a PDF and control slides with hand gestures. No clicks needed." />
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GestureSlides — Hand-Controlled Presentations</title>
+    <meta
+      name="description"
+      content="Upload a PDF and control slides with hand gestures. Built with React and Tailwind CSS."
+    />
 
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
 
-  <!-- PDF.js -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <!-- PDF.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+      if (window.pdfjsLib) {
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+          'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+      }
+    </script>
 
-  <!-- MediaPipe -->
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
-
-  <link rel="stylesheet" href="style.css" />
-</head>
-<body>
-<div id="app">
-
-  <!-- ═══════════════════════════════════════════
-       UPLOAD SCREEN
-       ═══════════════════════════════════════════ -->
-  <section id="upload-section">
-    <div id="drop-zone" role="button" tabindex="0" aria-label="Upload PDF file">
-      <div class="upload-icon">📄</div>
-      <h1 class="upload-title">Drop your PDF here</h1>
-      <p class="upload-sub">or click to browse files</p>
-      <div class="upload-badge">
-        <span class="badge">PDF</span>
-        <span class="badge">Gesture Control</span>
-        <span class="badge">Fullscreen</span>
-      </div>
-      <div class="gesture-hints">
-        <div class="hint-chip"><span>✋</span><span>Next slide</span></div>
-        <div class="hint-chip"><span>✊</span><span>Prev slide</span></div>
-        <div class="hint-chip"><span>☝️</span><span>First slide</span></div>
-        <div class="hint-chip"><span>🤙</span><span>Last slide</span></div>
-      </div>
-    </div>
-    <input type="file" id="file-input" accept=".pdf,application/pdf" hidden />
-  </section>
-
-  <!-- ═══════════════════════════════════════════
-       FULL-SCREEN VIEWER
-       ═══════════════════════════════════════════ -->
-  <section id="viewer-section" class="hidden">
-
-    <!-- Slide fills the entire screen -->
-    <canvas id="slide-canvas" aria-label="Slide content"></canvas>
-
-    <!-- Big gesture flash emoji centred on screen -->
-    <div id="gesture-flash" aria-hidden="true"></div>
-
-    <!-- ── Top gradient bar ── -->
-    <div id="top-bar">
-      <div class="logo">
-        <span class="logo-icon">🖐</span>
-        <span>GestureSlides</span>
-      </div>
-      <div class="top-bar-right">
-        <div id="slide-badge">Slide <span id="current-slide-num">1</span> / <span id="total-slide-num">1</span></div>
-      </div>
-    </div>
-
-    <!-- ── Bottom gradient bar (auto-hides) ── -->
-    <div id="bottom-bar">
-      <button id="btn-prev" class="btn" disabled aria-label="Previous slide">← Prev</button>
-
-      <!-- Thumbnail strip -->
-      <div id="thumbnail-strip-wrap">
-        <div id="thumbnail-strip" role="list" aria-label="Slide thumbnails"></div>
-      </div>
-
-      <button id="btn-next" class="btn" aria-label="Next slide">Next →</button>
-      <button id="btn-close" class="btn btn-danger" aria-label="Close presentation">✕ Exit</button>
-    </div>
-
-    <!-- ── Camera toggle button ── -->
-    <button id="btn-toggle-cam" aria-label="Toggle camera">📷 Camera</button>
-
-    <!-- ── Camera widget (floating, bottom-right) ── -->
-    <div id="camera-widget" aria-label="Gesture camera panel">
-
-      <!-- Gesture status pill -->
-      <div id="gesture-pill" class="glass">
-        <div id="gesture-icon">👋</div>
-        <div class="gesture-info">
-          <div id="gesture-name" style="color: var(--text-muted)">Show a gesture</div>
-          <div id="gesture-hint">Instant detection</div>
-        </div>
-      </div>
-
-      <!-- Live camera feed -->
-      <div class="cam-box">
-        <video id="webcam-video" autoplay playsinline muted aria-label="Webcam feed"></video>
-        <canvas id="gesture-canvas" aria-hidden="true"></canvas>
-        <span id="hand-status" class="hand-none">⚪ No hand</span>
-      </div>
-
-      <!-- Mini gesture guide -->
-      <div class="mini-guide">
-        <div class="mini-chip"><span>✋</span> Next</div>
-        <div class="mini-chip"><span>✊</span> Prev</div>
-        <div class="mini-chip"><span>☝️</span> First</div>
-        <div class="mini-chip"><span>🤙</span> Last</div>
-      </div>
-
-    </div><!-- #camera-widget -->
-
-  </section>
-
-</div><!-- #app -->
-
-<!-- ── Loading overlay ── -->
-<div id="loading-overlay" role="status" aria-live="polite">
-  <div class="spinner"></div>
-  <div id="loading-text">Loading…</div>
-</div>
-
-<!-- ── Toast ── -->
-<div id="toast" role="alert" aria-live="assertive"></div>
-
-<!-- Scripts -->
-<script src="pdf-renderer.js"></script>
-<script src="gesture-engine.js"></script>
-<script src="app.js"></script>
-</body>
+    <!-- MediaPipe CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+  </head>
+  <body class="bg-[#09090b] text-[#f4f4f5] antialiased selection:bg-indigo-500 selection:text-white">
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
 </html>
