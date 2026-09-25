@@ -168,11 +168,10 @@ export class GestureEngine {
       if (!this.ctx) return;
     }
 
-    this.ctx.clearRect(0, 0, this.canvasEl.width, this.canvasEl.height);
-    if (!results.multiHandLandmarks?.length) return;
-
     const W = this.canvasEl.width;
     const H = this.canvasEl.height;
+    this.ctx.clearRect(0, 0, W, H);
+    if (!results.multiHandLandmarks?.length) return;
 
     const CONNECTIONS = [
       [0, 1], [1, 2], [2, 3], [3, 4],
@@ -184,18 +183,38 @@ export class GestureEngine {
     ];
 
     for (const lm of results.multiHandLandmarks) {
-      this.ctx.strokeStyle = 'rgba(100, 255, 180, 0.75)';
-      this.ctx.lineWidth = 2;
+      // Elegant bones with subtle champagne / metallic tone
+      this.ctx.strokeStyle = 'rgba(215, 205, 190, 0.82)';
+      this.ctx.lineWidth = 1.75;
+      this.ctx.lineCap = 'round';
+      this.ctx.lineJoin = 'round';
+
       for (const [a, b] of CONNECTIONS) {
         this.ctx.beginPath();
         this.ctx.moveTo(lm[a].x * W, lm[a].y * H);
         this.ctx.lineTo(lm[b].x * W, lm[b].y * H);
         this.ctx.stroke();
       }
-      for (const p of lm) {
+
+      // Elegant joints with outer delicate ring and solid core
+      for (let i = 0; i < lm.length; i++) {
+        const p = lm[i];
+        const x = p.x * W;
+        const y = p.y * H;
+        const isFingertip = [4, 8, 12, 16, 20].includes(i);
+
+        // Subtle outer glow ring on fingertips
+        if (isFingertip) {
+          this.ctx.beginPath();
+          this.ctx.arc(x, y, 6, 0, Math.PI * 2);
+          this.ctx.strokeStyle = 'rgba(230, 220, 200, 0.45)';
+          this.ctx.lineWidth = 1;
+          this.ctx.stroke();
+        }
+
         this.ctx.beginPath();
-        this.ctx.arc(p.x * W, p.y * H, 3.5, 0, Math.PI * 2);
-        this.ctx.fillStyle = 'rgba(80, 220, 255, 0.95)';
+        this.ctx.arc(x, y, isFingertip ? 3.5 : 2.5, 0, Math.PI * 2);
+        this.ctx.fillStyle = isFingertip ? '#FFFFFF' : '#D6C8B5';
         this.ctx.fill();
       }
     }

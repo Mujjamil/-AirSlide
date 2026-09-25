@@ -3,29 +3,30 @@ import TopBar from './TopBar';
 import BottomBar from './BottomBar';
 import CameraWidget from './CameraWidget';
 import GestureFlash from './GestureFlash';
+import SlideCanvas from './SlideCanvas';
 
 export default function Viewer({
+  setCameraMount,
   totalPages,
   currentPage,
   onPageChange,
   onClose,
   pdfRenderer,
+  hasPdf,
+  pdfFileName,
   currentGesture,
   handDetected,
   flashTrigger,
   camVisible,
   onToggleCam,
-  videoRef,
-  gestureCanvasRef,
 }) {
-  const slideCanvasRef = useRef(null);
   const [isBarVisible, setIsBarVisible] = useState(true);
   const [animClass, setAnimClass] = useState('');
   const [isFullscreen, setIsFullscreen] = useState(false);
   const hideTimerRef = useRef(null);
   const isTransitioningRef = useRef(false);
 
-  // Auto-hide bottom bar after 3.5s inactivity
+  // Auto-hide controls after 3.5s inactivity
   const showControlsTemporarily = useCallback(() => {
     setIsBarVisible(true);
     if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
@@ -34,7 +35,6 @@ export default function Viewer({
     }, 3500);
   }, []);
 
-  // Listen for mouse move & touch
   useEffect(() => {
     showControlsTemporarily();
     window.addEventListener('mousemove', showControlsTemporarily);
@@ -46,7 +46,7 @@ export default function Viewer({
     };
   }, [showControlsTemporarily]);
 
-  // Handle Fullscreen change listener
+  // Fullscreen change listener
   useEffect(() => {
     const handleFullscreenChange = () => {
       setIsFullscreen(!!document.fullscreenElement);
@@ -67,40 +67,46 @@ export default function Viewer({
     } catch (_) {}
   };
 
-  // Render slide when currentPage changes
+  // Keyboard navigation
   useEffect(() => {
-    let isMounted = true;
-
-    async function renderCurrentSlide() {
-      if (!pdfRenderer || !slideCanvasRef.current) return;
-      pdfRenderer.setCanvas(slideCanvasRef.current);
-      try {
-        await pdfRenderer.renderPageFullScreen(currentPage);
-      } catch (err) {
-        console.error('Failed to render slide:', err);
+    const handleKeyDown = (e) => {
+      switch (e.key) {
+        case 'ArrowRight':
+        case 'ArrowDown':
+        case ' ':
+          e.preventDefault();
+          handleNavigate(currentPage + 1, 'next');
+          break;
+        case 'ArrowLeft':
+        case 'ArrowUp':
+          e.preventDefault();
+          handleNavigate(currentPage - 1, 'prev');
+          break;
+        case 'Home':
+          e.preventDefault();
+          handleNavigate(1, 'prev');
+          break;
+        case 'End':
+          e.preventDefault();
+          handleNavigate(totalPages, 'next');
+          break;
+        case 'Escape':
+          onClose();
+          break;
+        case 'f':
+        case 'F':
+          toggleFullscreen();
+          break;
+        default:
+          break;
       }
-    }
-
-    renderCurrentSlide();
-
-    // Re-render on window resize
-    let resizeTimer;
-    const handleResize = () => {
-      clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(() => {
-        if (isMounted) renderCurrentSlide();
-      }, 150);
     };
-    window.addEventListener('resize', handleResize);
 
-    return () => {
-      isMounted = false;
-      window.removeEventListener('resize', handleResize);
-      clearTimeout(resizeTimer);
-    };
-  }, [currentPage, pdfRenderer]);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [currentPage, totalPages]);
 
-  // Navigate with animation
+  // Navigate with smooth animated slide transition
   const handleNavigate = async (newPage, direction = 'next') => {
     if (isTransitioningRef.current || newPage === currentPage) return;
     if (newPage < 1 || newPage > totalPages) return;
@@ -109,7 +115,7 @@ export default function Viewer({
     const outAnim = direction === 'next' ? 'animate-slideOutLeft' : 'animate-slideOutRight';
     setAnimClass(outAnim);
 
-    await new Promise((r) => setTimeout(r, 160));
+    await new Promise((r) => setTimeout(r, 140));
 
     onPageChange(newPage);
     setAnimClass('animate-slideIn');
@@ -120,19 +126,7 @@ export default function Viewer({
   };
 
   return (
-    <section className="fixed inset-0 z-50 bg-black flex items-center justify-center overflow-hidden select-none">
-      {/* Centered slide canvas */}
-      <div className="relative flex items-center justify-center max-w-full max-h-full">
-        <canvas
-          ref={slideCanvasRef}
-          aria-label="Slide content"
-          className={`block max-w-screen max-h-screen w-auto h-auto object-contain transition-transform duration-150 ${animClass}`}
-        />
-      </div>
-
-      {/* Center big gesture flash emoji */}
-      <GestureFlash trigger={flashTrigger} />
-
+    <section className="fixed inset-0 z-50 bg-[#0A0B0D] flex items-center justify-center overflow-hidden select-none">
       {/* Top Header Bar */}
       <TopBar
         currentPage={currentPage}
@@ -141,9 +135,30 @@ export default function Viewer({
         onToggleCam={onToggleCam}
         isFullscreen={isFullscreen}
         onToggleFullscreen={toggleFullscreen}
+        onClose={onClose}
+        pdfFileName={pdfFileName}
       />
 
-      {/* Bottom Floating Bar */}
+      {/* Main Slide Presentation Stage */}
+      <div className="relative w-full h-full flex items-center justify-center p-4 sm:p-8 md:p-14">
+        <div
+          className={`relative max-w-6xl w-full max-h-[85vh] aspect-[16/10] flex items-center justify-center transition-transform duration-200 ${animClass}`}
+        >
+          <SlideCanvas
+            pdfRenderer={pdfRenderer}
+            hasPdf={hasPdf}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            aspectRatio="16/10"
+            className="w-full h-full"
+          />
+        </div>
+      </div>
+
+      {/* Editorial HUD Gesture Feedback */}
+      <GestureFlash trigger={flashTrigger} />
+
+      {/* Floating Bottom Navigation Drawer */}
       <BottomBar
         isVisible={isBarVisible}
         currentPage={currentPage}
@@ -153,15 +168,15 @@ export default function Viewer({
         onClose={onClose}
         onSelectPage={(p) => handleNavigate(p, p > currentPage ? 'next' : 'prev')}
         pdfRenderer={pdfRenderer}
+        hasPdf={hasPdf}
       />
 
       {/* Floating Camera Widget */}
       <CameraWidget
+        setCameraMount={setCameraMount}
         camVisible={camVisible}
         currentGesture={currentGesture}
         handDetected={handDetected}
-        videoRef={videoRef}
-        canvasRef={gestureCanvasRef}
       />
     </section>
   );

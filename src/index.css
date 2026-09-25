@@ -3,51 +3,158 @@
 @tailwind utilities;
 
 :root {
-  --bg: #09090b;
-  --surface: rgba(15, 15, 20, 0.82);
-  --surface-hi: rgba(255, 255, 255, 0.08);
-  --border: rgba(255, 255, 255, 0.10);
-  --border-hi: rgba(255, 255, 255, 0.22);
-  --accent: #6366f1;
-  --accent-glow: rgba(99, 102, 241, 0.4);
+  --bg-paper: #ECE8E1;
+  --text-ink: #121316;
+  --bg-obsidian: #0C0D0F;
+  --text-light: #F5F5F7;
+}
+
+html {
+  scroll-behavior: smooth;
+  background-color: var(--bg-paper);
 }
 
 body {
   margin: 0;
   padding: 0;
-  height: 100vh;
-  width: 100vw;
-  background-color: var(--bg);
-  color: #f4f4f5;
-  font-family: 'Inter', system-ui, sans-serif;
-  overflow: hidden;
-  user-select: none;
+  background-color: var(--bg-paper);
+  color: var(--text-ink);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Glassmorphism helpers */
-.glass {
-  background: var(--surface);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--border);
+/* Editorial 3D Obsidian Sphere embedded into typography */
+.editorial-sphere {
+  display: inline-block;
+  vertical-align: middle;
+  border-radius: 50%;
+  position: relative;
+  background: radial-gradient(circle at 32% 28%, #666870 0%, #202227 45%, #0d0e11 80%, #050507 100%);
+  box-shadow: 
+    inset -2px -2px 6px rgba(0, 0, 0, 0.9),
+    inset 2px 2px 4px rgba(255, 255, 255, 0.4),
+    0 4px 12px rgba(0, 0, 0, 0.25);
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.5s ease;
 }
 
-.glass-pill {
-  background: rgba(15, 15, 20, 0.85);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--border);
+.editorial-sphere:hover {
+  transform: scale(1.12) rotate(15deg);
+  box-shadow: 
+    inset -2px -2px 8px rgba(0, 0, 0, 0.95),
+    inset 2px 2px 6px rgba(255, 255, 255, 0.6),
+    0 8px 20px rgba(0, 0, 0, 0.35);
 }
 
-/* Custom scrollbars */
+/* Light / Chrome variation */
+.editorial-sphere-chrome {
+  background: radial-gradient(circle at 35% 30%, #ffffff 0%, #b8bcc4 30%, #4a4e58 75%, #18191e 100%);
+  box-shadow: 
+    inset -2px -2px 5px rgba(0, 0, 0, 0.8),
+    inset 2px 2px 5px rgba(255, 255, 255, 0.9),
+    0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+/* Reticle orbital lines */
+.reticle-ring {
+  border-radius: 50%;
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.reticle-ring-solid {
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+/* Editorial pill badges */
+.editorial-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.625rem;
+  border-radius: 9999px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border: 1px solid rgba(18, 19, 22, 0.12);
+  background-color: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #121316;
+  transition: all 0.25s ease;
+}
+
+.editorial-pill-dark {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background-color: rgba(255, 255, 255, 0.05);
+  color: #F5F5F7;
+}
+
+.editorial-pill:hover {
+  border-color: rgba(18, 19, 22, 0.35);
+  background-color: rgba(255, 255, 255, 0.8);
+}
+
+.editorial-pill-dark:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Custom minimal scrollbar */
 ::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
+  width: 5px;
+  height: 5px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 4px;
+  background: rgba(18, 19, 22, 0.2);
+  border-radius: 9999px;
+}
+.dark-section ::-webkit-scrollbar-thumb,
+.bg-obsidian ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Subtle selection */
+::selection {
+  background-color: #121316;
+  color: #ECE8E1;
+}
+
+.dark-section ::selection,
+.bg-obsidian ::selection {
+  background-color: #F5F5F7;
+  color: #0C0D0F;
+}
+
+/* Smooth custom cursor styles */
+@media (hover: hover) and (pointer: fine) {
+  .has-custom-cursor,
+  .has-custom-cursor a,
+  .has-custom-cursor button {
+    cursor: default;
+  }
 }
