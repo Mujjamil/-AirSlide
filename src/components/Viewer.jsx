@@ -19,12 +19,23 @@ export default function Viewer({
   flashTrigger,
   camVisible,
   onToggleCam,
+  isCameraRunning,
+  onToggleCamera,
 }) {
   const [isBarVisible, setIsBarVisible] = useState(true);
   const [animClass, setAnimClass] = useState('');
   const [isFullscreen, setIsFullscreen] = useState(false);
   const hideTimerRef = useRef(null);
   const isTransitioningRef = useRef(false);
+
+  // Combined camera handler: toggle engine + sync widget visibility
+  const handleToggleCamera = () => {
+    if (onToggleCamera) onToggleCamera();
+    // If camera is currently off and we're turning it on, show the widget
+    // If it's on and we're turning it off, hide the widget
+    if (!isCameraRunning && !camVisible) onToggleCam();
+    if (isCameraRunning && camVisible) onToggleCam();
+  };
 
   // Auto-hide controls after 3.5s inactivity
   const showControlsTemporarily = useCallback(() => {
@@ -126,30 +137,31 @@ export default function Viewer({
   };
 
   return (
-    <section className="fixed inset-0 z-50 bg-[#0A0B0D] flex items-center justify-center overflow-hidden select-none">
+    <section className="fixed inset-0 z-50 bg-[#0A0B0D] flex flex-col overflow-hidden select-none">
       {/* Top Header Bar */}
       <TopBar
         currentPage={currentPage}
         totalPages={totalPages}
         camVisible={camVisible}
-        onToggleCam={onToggleCam}
+        isCameraRunning={isCameraRunning}
+        onToggleCam={handleToggleCamera}
         isFullscreen={isFullscreen}
         onToggleFullscreen={toggleFullscreen}
         onClose={onClose}
         pdfFileName={pdfFileName}
       />
 
-      {/* Main Slide Presentation Stage */}
-      <div className="relative w-full h-full flex items-center justify-center p-4 sm:p-8 md:p-14">
+      {/* Main Slide Presentation Stage — fills all space between bars */}
+      <div className="relative flex-1 min-h-0 flex items-center justify-center overflow-hidden">
         <div
-          className={`relative max-w-6xl w-full max-h-[85vh] aspect-[16/10] flex items-center justify-center transition-transform duration-200 ${animClass}`}
+          className={`relative w-full h-full flex items-center justify-center transition-transform duration-200 ${animClass}`}
         >
           <SlideCanvas
             pdfRenderer={pdfRenderer}
             hasPdf={hasPdf}
             currentPage={currentPage}
             totalPages={totalPages}
-            aspectRatio="16/10"
+            aspectRatio="16/9"
             className="w-full h-full"
           />
         </div>

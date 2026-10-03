@@ -42,7 +42,7 @@ export class GestureEngine {
     if (!window.Hands || !window.Camera) {
       throw new Error('MediaPipe Hands or Camera is not loaded.');
     }
-    if (!this.videoEl) return;
+    if (!this.videoEl) throw new Error('Video element is not mounted yet. Retry after component renders.');
 
     this._running = true;
 

@@ -42,7 +42,8 @@ export default function SlideCanvas({
       <div className={`relative flex items-center justify-center w-full h-full ${className}`}>
         <canvas
           ref={canvasRef}
-          className="max-w-full max-h-full object-contain shadow-2xl rounded-xl"
+          className="block max-w-full max-h-full object-contain"
+          style={{ width: '100%', height: '100%', objectFit: 'contain' }}
         />
       </div>
     );

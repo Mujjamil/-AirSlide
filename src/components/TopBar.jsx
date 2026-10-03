@@ -5,6 +5,7 @@ export default function TopBar({
   currentPage,
   totalPages,
   camVisible,
+  isCameraRunning,
   onToggleCam,
   isFullscreen,
   onToggleFullscreen,
@@ -56,15 +57,15 @@ export default function TopBar({
         {/* Camera Toggle */}
         <button
           onClick={onToggleCam}
-          aria-label="Toggle Camera HUD"
+          aria-label="Toggle Camera"
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-mono tracking-wider uppercase border transition-all backdrop-blur-md ${
-            camVisible
-              ? 'bg-white/15 border-white/30 text-white'
-              : 'bg-black/40 border-white/10 text-zinc-400 hover:text-white'
+            isCameraRunning
+              ? 'bg-emerald-500/20 border-emerald-400/40 text-emerald-300'
+              : 'bg-black/40 border-white/10 text-zinc-400 hover:text-white hover:border-white/20'
           }`}
         >
-          {camVisible ? <Camera className="w-3.5 h-3.5" /> : <CameraOff className="w-3.5 h-3.5" />}
-          <span className="hidden sm:inline">Camera</span>
+          {isCameraRunning ? <Camera className="w-3.5 h-3.5" /> : <CameraOff className="w-3.5 h-3.5" />}
+          <span className="hidden sm:inline">{isCameraRunning ? 'Camera On' : 'Camera Off'}</span>
         </button>
 
         {/* Fullscreen Toggle */}

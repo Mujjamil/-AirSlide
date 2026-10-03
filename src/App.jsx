@@ -182,12 +182,11 @@ export default function App() {
 
   // Presentation Mode toggles
   const handleLaunchPresentation = () => {
+    setCamVisible(true); // ensure camera widget is visible
     setPresentationOpen(true);
-    // Auto-start camera if not already running for seamless demo
-    if (!isCameraRunning) {
-      startCamera();
-    }
+    // Camera auto-starts via useEffect below (with 200ms delay for DOM to settle)
   };
+
 
   const handleClosePresentation = () => {
     setPresentationOpen(false);
@@ -196,12 +195,24 @@ export default function App() {
     }
   };
 
+  // Auto-start camera when presentation opens — delayed so Viewer+CameraFeed render first
+  useEffect(() => {
+    if (!presentationOpen) return;
+    if (isCameraRunning) return;
+    const t = setTimeout(() => {
+      startCamera();
+    }, 200); // wait one render cycle for videoRef to be set
+    return () => clearTimeout(t);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [presentationOpen]);
+
   const scrollToDemo = () => {
     const demoEl = document.getElementById('demo');
     if (demoEl) {
       demoEl.scrollIntoView({ behavior: 'smooth' });
     }
   };
+
 
   return (
     <div className="relative min-h-screen bg-[#ECE8E1] text-[#121316] font-sans selection:bg-[#121316] selection:text-[#ECE8E1]">
@@ -265,6 +276,8 @@ export default function App() {
           flashTrigger={flashTrigger}
           camVisible={camVisible}
           onToggleCam={() => setCamVisible((v) => !v)}
+          isCameraRunning={isCameraRunning}
+          onToggleCamera={toggleCamera}
         />
       )}
 

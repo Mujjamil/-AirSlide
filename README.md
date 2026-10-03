@@ -47,3 +47,9 @@ npm run build
 - **PDF.js**
 - **MediaPipe Hands & Camera Utils**
 - **Lucide React**
+
+
+Future Impelementation 
+1.Focus mode on gesture 
+2.Zoom in Zoom out on gesture 
+  

@@ -43,19 +43,28 @@ export class PDFRenderer {
     const page = await this._pdf.getPage(pageNum);
     const vp1 = page.getViewport({ scale: 1 });
     const dpr = window.devicePixelRatio || 1;
-    const scaleX = window.innerWidth / vp1.width;
-    const scaleY = window.innerHeight / vp1.height;
-    const scale = Math.min(scaleX, scaleY) * dpr;
+
+    // Use the parent container's dimensions so the canvas fills the actual stage
+    const container = this.canvas.parentElement;
+    const availW = container ? container.clientWidth : window.innerWidth;
+    const availH = container ? container.clientHeight : window.innerHeight;
+
+    const scaleX = availW / vp1.width;
+    const scaleY = availH / vp1.height;
+    // contain-fit: preserve aspect ratio
+    const cssScale = Math.min(scaleX, scaleY);
+    const scale = cssScale * dpr;
 
     const scaledVp = page.getViewport({ scale });
     this.canvas.width = scaledVp.width;
     this.canvas.height = scaledVp.height;
 
-    // CSS display size
-    const cssW = vp1.width * Math.min(scaleX, scaleY);
-    const cssH = vp1.height * Math.min(scaleX, scaleY);
+    // CSS display size — fills the container while preserving aspect ratio
+    const cssW = vp1.width * cssScale;
+    const cssH = vp1.height * cssScale;
     this.canvas.style.width = `${cssW}px`;
     this.canvas.style.height = `${cssH}px`;
+    this.canvas.style.display = 'block';
 
     const ctx = this.canvas.getContext('2d');
     this._renderTask = page.render({ canvasContext: ctx, viewport: scaledVp });
