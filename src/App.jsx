@@ -33,7 +33,11 @@ export default function App() {
   const [flashTrigger, setFlashTrigger] = useState(null);
   const [camVisible, setCamVisible] = useState(true);
   const [isCameraRunning, setIsCameraRunning] = useState(false);
-  const [cameraMount, setCameraMount] = useState(null);
+  const [playgroundMount, setPlaygroundMount] = useState(null);
+  const [viewerMount, setViewerMount] = useState(null);
+
+  // Active portal mount target: Viewer widget during presentation, LivePlayground otherwise
+  const activeCameraMount = presentationOpen ? (viewerMount || playgroundMount) : playgroundMount;
 
   // Service instances & element refs
   const pdfRendererRef = useRef(null);
@@ -85,21 +89,45 @@ export default function App() {
     [triggerFlash]
   );
 
+  // Helper to ensure MediaPipe CDN libraries are ready
+  const ensureMediaPipeReady = async () => {
+    if (window.Hands && window.Camera) return true;
+    for (let i = 0; i < 20; i++) {
+      await new Promise((resolve) => setTimeout(resolve, 150));
+      if (window.Hands && window.Camera) return true;
+    }
+    return false;
+  };
+
   // Start Camera and Gesture Engine
   const startCamera = async () => {
-    if (!window.Hands || !window.Camera) {
-      showToast('MediaPipe dependencies still loading. Please retry.', 'error');
-      return;
-    }
-
     try {
       setIsLoading(true);
       setLoadingText('Initializing AI gesture vision…');
 
+      const isReady = await ensureMediaPipeReady();
+      if (!isReady) {
+        throw new Error('MediaPipe gesture vision models are still loading. Please try again.');
+      }
+
+      // Ensure video element is available from ref or DOM portal
+      let vidEl = videoRef.current || document.querySelector('video');
+      let canEl = gestureCanvasRef.current || document.querySelector('canvas[aria-hidden="true"]');
+
+      if (!vidEl) {
+        await new Promise((r) => setTimeout(r, 150));
+        vidEl = videoRef.current || document.querySelector('video');
+        canEl = gestureCanvasRef.current || document.querySelector('canvas[aria-hidden="true"]');
+      }
+
+      if (!vidEl) {
+        throw new Error('Webcam display viewport is not mounted yet. Please retry.');
+      }
+
       if (!gestureEngineRef.current) {
         const engine = new GestureEngine({
-          videoElement: videoRef.current,
-          canvasElement: gestureCanvasRef.current,
+          videoElement: vidEl,
+          canvasElement: canEl,
           holdMs: 0, // Instant classification
           cooldownMs: 1000,
           onHandDetected: (detected) => setHandDetected(detected),
@@ -108,7 +136,7 @@ export default function App() {
         });
         gestureEngineRef.current = engine;
       } else {
-        gestureEngineRef.current.setElements(videoRef.current, gestureCanvasRef.current);
+        gestureEngineRef.current.setElements(vidEl, canEl);
       }
 
       await gestureEngineRef.current.start();
@@ -118,7 +146,7 @@ export default function App() {
     } catch (err) {
       console.warn('Camera initiation failed:', err);
       setIsLoading(false);
-      showToast('Camera access required for gesture control', 'error');
+      showToast(err.message || 'Camera access required for gesture control', 'error');
     }
   };
 
@@ -249,7 +277,7 @@ export default function App() {
         <HowItWorks />
 
         <LivePlayground
-          setCameraMount={setCameraMount}
+          setCameraMount={setPlaygroundMount}
           videoRef={videoRef}
           gestureCanvasRef={gestureCanvasRef}
           isCameraRunning={isCameraRunning}
@@ -274,7 +302,7 @@ export default function App() {
       {/* Fullscreen Presentation Mode Modal */}
       {presentationOpen && (
         <Viewer
-          setCameraMount={setCameraMount}
+          setCameraMount={setViewerMount}
           totalPages={totalPages}
           currentPage={currentPage}
           onPageChange={setCurrentPage}
@@ -293,10 +321,10 @@ export default function App() {
       )}
 
       {/* Persistent Portal for Camera Feed (Zero Reconnects) */}
-      {cameraMount &&
+      {activeCameraMount &&
         ReactDOM.createPortal(
           <CameraFeed videoRef={videoRef} canvasRef={gestureCanvasRef} />,
-          cameraMount
+          activeCameraMount
         )}
 
       {/* Global Utilities */}

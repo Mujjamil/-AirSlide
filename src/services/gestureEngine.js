@@ -32,15 +32,18 @@ export class GestureEngine {
   }
 
   setElements(videoElement, canvasElement) {
-    this.videoEl = videoElement;
-    this.canvasEl = canvasElement;
-    this.ctx = canvasElement ? canvasElement.getContext('2d') : null;
+    this.videoEl = videoElement || (typeof document !== 'undefined' ? document.querySelector('video') : null);
+    this.canvasEl = canvasElement || (typeof document !== 'undefined' ? document.querySelector('canvas[aria-hidden="true"]') : null);
+    this.ctx = this.canvasEl ? this.canvasEl.getContext('2d') : null;
   }
 
   async start() {
     if (this._running) return;
     if (!window.Hands || !window.Camera) {
       throw new Error('MediaPipe Hands or Camera is not loaded.');
+    }
+    if (!this.videoEl && typeof document !== 'undefined') {
+      this.videoEl = document.querySelector('video');
     }
     if (!this.videoEl) throw new Error('Video element is not mounted yet. Retry after component renders.');
 

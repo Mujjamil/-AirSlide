@@ -114,8 +114,13 @@ export default function LivePlayground({
                     Activate camera to test real-time MediaPipe hand gesture tracking.
                   </p>
                   <button
-                    onClick={onToggleCamera}
-                    className="px-5 py-2.5 rounded-full bg-white text-black hover:bg-zinc-200 font-mono text-xs uppercase tracking-wider font-semibold transition-transform hover:scale-105 shadow-md"
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      onToggleCamera();
+                    }}
+                    className="px-5 py-2.5 rounded-full bg-white text-black hover:bg-zinc-200 font-mono text-xs uppercase tracking-wider font-semibold transition-transform hover:scale-105 shadow-md active:scale-95 cursor-pointer"
                   >
                     Start AI Camera
                   </button>
@@ -135,8 +140,13 @@ export default function LivePlayground({
                   </div>
 
                   <button
-                    onClick={onToggleCamera}
-                    className="pointer-events-auto px-2.5 py-1 rounded-full bg-black/60 hover:bg-black/90 backdrop-blur-md text-zinc-300 hover:text-white border border-white/10 transition-colors"
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      onToggleCamera();
+                    }}
+                    className="pointer-events-auto px-2.5 py-1 rounded-full bg-black/60 hover:bg-black/90 backdrop-blur-md text-zinc-300 hover:text-white border border-white/10 transition-colors cursor-pointer"
                   >
                     Stop Feed
                   </button>
