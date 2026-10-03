@@ -18,10 +18,10 @@ export default function TechSpecs() {
     },
     {
       num: '03',
-      title: 'PDF.js High-DPI Vector Engine',
+      title: 'PDF.js & PPTX Rasterization Pipeline',
       layer: 'DOCUMENT RASTERIZATION',
-      details: 'Direct vector rendering onto HTML5 canvas with dynamic devicePixelRatio scaling. Ensures pitch decks and diagrams maintain laser-sharp typography.',
-      badge: 'v3.11.174',
+      details: 'Direct vector rendering onto HTML5 canvas with dynamic devicePixelRatio scaling. Native support for PDF vector layers and automated PowerPoint (.pptx) conversion pipeline.',
+      badge: 'PDF + PPTX',
     },
     {
       num: '04',

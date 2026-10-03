@@ -14,6 +14,7 @@ import CustomCursor from './components/CustomCursor';
 import Toast from './components/Toast';
 import LoadingOverlay from './components/LoadingOverlay';
 import { PDFRenderer } from './services/pdfRenderer';
+import { convertPptxToPdf } from './services/pptxConverter';
 import { GestureEngine } from './services/gestureEngine';
 import { GESTURE_META, DEFAULT_EDITORIAL_SLIDES } from './constants/gestures';
 
@@ -139,25 +140,35 @@ export default function App() {
     }
   };
 
-  // Handle PDF Upload
+  // Handle Presentation Upload (PDF & PPTX)
   const handleFileSelect = async (selectedFile) => {
     if (!selectedFile) return;
 
-    if (selectedFile.type !== 'application/pdf' && !selectedFile.name.endsWith('.pdf')) {
-      showToast('Please select a valid PDF presentation document', 'error');
+    const isPdf = selectedFile.type === 'application/pdf' || selectedFile.name.toLowerCase().endsWith('.pdf');
+    const isPptx = selectedFile.name.toLowerCase().endsWith('.pptx') || selectedFile.type.includes('presentationml');
+
+    if (!isPdf && !isPptx) {
+      showToast('Please select a valid PDF or PPTX presentation document', 'error');
       return;
     }
 
     setIsLoading(true);
-    setLoadingText('Rasterizing PDF presentation vector layers…');
 
     try {
+      let fileToRender = selectedFile;
+      if (isPptx) {
+        setLoadingText('Connecting to PPTX conversion server…');
+        fileToRender = await convertPptxToPdf(selectedFile, (msg) => setLoadingText(msg));
+      } else {
+        setLoadingText('Rasterizing PDF presentation vector layers…');
+      }
+
       if (pdfRendererRef.current) {
         pdfRendererRef.current.unload();
       }
 
       const renderer = new PDFRenderer(null);
-      const pages = await renderer.load(selectedFile);
+      const pages = await renderer.load(fileToRender);
       pdfRendererRef.current = renderer;
 
       setFile(selectedFile);
@@ -170,7 +181,7 @@ export default function App() {
     } catch (err) {
       console.error(err);
       setIsLoading(false);
-      showToast(err.message || 'Failed to parse PDF document', 'error');
+      showToast(err.message || 'Failed to parse presentation document', 'error');
     }
   };
 

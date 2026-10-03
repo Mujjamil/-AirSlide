@@ -49,7 +49,7 @@ export default function DropZone({ onFileSelect }) {
       <div
         role="button"
         tabIndex={0}
-        aria-label="Upload PDF file"
+        aria-label="Upload PDF or PPTX file"
         onClick={() => fileInputRef.current?.click()}
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') fileInputRef.current?.click();
@@ -66,7 +66,7 @@ export default function DropZone({ onFileSelect }) {
         {/* Floating animated icon */}
         <div className="relative mb-4">
           <div className="text-6xl animate-float filter drop-shadow-[0_10px_20px_rgba(99,102,241,0.4)]">
-            📄
+            📊
           </div>
           <span className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-indigo-500 text-white shadow-lg">
             <Sparkles className="w-3.5 h-3.5" />
@@ -74,7 +74,7 @@ export default function DropZone({ onFileSelect }) {
         </div>
 
         <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight bg-gradient-to-r from-indigo-200 via-purple-200 to-pink-200 bg-clip-text text-transparent">
-          Drop your PDF presentation here
+          Drop your PDF or PPTX deck here
         </h1>
         <p className="mt-2 text-sm text-zinc-400">
           or <span className="text-indigo-400 underline underline-offset-4 font-medium group-hover:text-indigo-300">browse from your computer</span>
@@ -83,7 +83,7 @@ export default function DropZone({ onFileSelect }) {
         {/* Feature badges */}
         <div className="mt-5 flex flex-wrap gap-2 justify-center">
           <span className="px-3 py-1 rounded-full bg-white/[0.04] border border-white/10 text-xs font-semibold tracking-wider uppercase text-zinc-400">
-            PDF Support
+            PDF & PPTX Support
           </span>
           <span className="px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-xs font-semibold tracking-wider uppercase text-indigo-300">
             Hand Gestures
@@ -116,7 +116,7 @@ export default function DropZone({ onFileSelect }) {
         <input
           ref={fileInputRef}
           type="file"
-          accept=".pdf,application/pdf"
+          accept=".pdf,application/pdf,.pptx,application/vnd.openxmlformats-officedocument.presentationml.presentation"
           className="hidden"
           onChange={handleInputChange}
         />

@@ -64,7 +64,7 @@ export default function LivePlayground({
             <input
               ref={fileInputRef}
               type="file"
-              accept=".pdf,application/pdf"
+              accept=".pdf,application/pdf,.pptx,application/vnd.openxmlformats-officedocument.presentationml.presentation"
               className="hidden"
               onChange={(e) => {
                 if (e.target.files && e.target.files[0]) {
@@ -78,7 +78,7 @@ export default function LivePlayground({
               className="px-4 py-2.5 rounded-full border border-black/20 hover:border-black/50 text-xs font-mono tracking-wider uppercase text-zinc-800 hover:text-black flex items-center gap-2 transition-colors bg-white/40 backdrop-blur-sm"
             >
               <Upload className="w-3.5 h-3.5" />
-              <span>{hasPdf ? 'Switch PDF Deck' : 'Upload Custom PDF'}</span>
+              <span>{hasPdf ? 'Switch Deck (PDF/PPTX)' : 'Upload Custom Deck (PDF/PPTX)'}</span>
             </button>
 
             <button
